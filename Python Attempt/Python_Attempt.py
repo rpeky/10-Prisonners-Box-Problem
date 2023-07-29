@@ -1,7 +1,7 @@
 import json
 import os
-#from multiprocessing import Process 
-
+from multiprocessing import Process 
+import time
 
 class Prisoner():
     #prisonerid = None
@@ -195,17 +195,126 @@ def strat2(p_list, b_list, testcases):
     return
 
 #try if your number is odd or even go for odd or even
-def strat3():
-    pass
+def strat3(p_list, b_list, testcases):
+    print('Starting Strat 3')
+    successcount=0
+    #load each list of values
+    for scenario in testcases:
+        #load values into box
+        for ind, val in enumerate(scenario):
+            b_list[ind].update_numberinbox(val)
+
+        #odd people open odd boxes 0 2 4 6 8
+        for _ in range(0,len(p_list),2):
+            #should open 0,2,4,6,8 which are odd boxes
+            for j in range(0,len(b_list),2):
+                if(p_list[_].PassorFail==True):
+                    pass
+                else:
+                    p_list[_].update_openbox(b_list[j].numberinbox)
+                    #print('prisoner #{} opened box number#{} \ncontains: number #{}'.format(_,j,b_list[j].numberinbox))
+
+        #even opens all even boxes 1 3 5 7 9
+        for _ in range(1,len(p_list),2):
+            #opens 1,3,5,7,9
+            for j in range(1,len(b_list),2):
+                if(p_list[_].PassorFail==True):
+                    pass
+                else:
+                    p_list[_].update_openbox(b_list[j].numberinbox)
+                    #print('prisoner #{} opened box number#{} \ncontains: number #{}'.format(_,j,b_list[j].numberinbox))
+        #reset values in obj
+        successcount+=check_solutionpassorfail(p_list)
+
+        for i in range(len(p_list)):
+            p_list[i].resetallvalues_toreuse()
+            b_list[i].resetallvalues_toreuse()
+        #print(idex)
+
+    a = resultofstrat(successcount)
+    with open('strat3 result.txt', 'w') as f:
+        f.write(str(a))
+    print('Ending Strat 3')
+    return
 
 #try inverse strat 3
-def strat4():
-    pass
+def strat4(p_list, b_list, testcases):
+    print('Starting Strat 4')
+    successcount=0
+    #load each list of values
+    for scenario in testcases:
+        #load values into box
+        for ind, val in enumerate(scenario):
+            b_list[ind].update_numberinbox(val)
+
+        #odd people open even boxes 0 2 4 6 8
+        for _ in range(0,len(p_list),2):
+            #should open 1,3,5,7,9 which are odd boxes
+            for j in range(1,len(b_list),2):
+                if(p_list[_].PassorFail==True):
+                    pass
+                else:
+                    p_list[_].update_openbox(b_list[j].numberinbox)
+                    #print('prisoner #{} opened box number#{} \ncontains: number #{}'.format(_,j,b_list[j].numberinbox))
+
+        #even opens all even boxes 1 3 5 7 9
+        for _ in range(1,len(p_list),2):
+            #opens  0,2,4,6,8
+            for j in range(0,len(b_list),2):
+                if(p_list[_].PassorFail==True):
+                    pass
+                else:
+                    p_list[_].update_openbox(b_list[j].numberinbox)
+                    #print('prisoner #{} opened box number#{} \ncontains: number #{}'.format(_,j,b_list[j].numberinbox))
+        #reset values in obj
+        successcount+=check_solutionpassorfail(p_list)
+
+        for i in range(len(p_list)):
+            p_list[i].resetallvalues_toreuse()
+            b_list[i].resetallvalues_toreuse()
+        #print(idex)
+
+    a = resultofstrat(successcount)
+    with open('strat4 result.txt', 'w') as f:
+        f.write(str(a))
+    print('Ending Strat 4')
+    return
 
 #try your own number then pointer style solution
 def strat5(prisonerlist, boxlist, testcase):
+    print('Starting Strat 5')
+    successcount=0
+    #load each list of values
+    for scenario in testcase:
+        #load values into box
+        for ind, val in enumerate(scenario):
+            boxlist[ind].update_numberinbox(val)
 
-    pass
+        #loop through every prisoner obj
+        for _ in range(len(prisonerlist)):
+            #check number in own box, if same means a win, else go to next box
+            numinboxpoint=boxlist[_].numberinbox
+            prisonerlist[_].update_openbox(numinboxpoint)
+            # 4 boxes left
+            for i in range(4):
+                if(prisonerlist[_].PassorFail==True):
+                    break
+                else:
+                    numinboxpoint = boxlist[int(numinboxpoint)].numberinbox
+                    prisonerlist[_].update_openbox(numinboxpoint)
+
+        successcount+=check_solutionpassorfail(prisonerlist)
+
+        for i in range(len(prisonerlist)):
+            prisonerlist[i].resetallvalues_toreuse()
+            boxlist[i].resetallvalues_toreuse()
+        #print(idex)
+
+    a = resultofstrat(successcount)
+    with open('strat5 result.txt', 'w') as f:
+        f.write(str(a))
+    print('Ending Strat 5')
+    return
 
 #Evaluation for how effective solution is
 
@@ -232,11 +341,28 @@ def resultofstrat(success):
 
 
 def main():
+    starttime=time.process_time()
     print('Start')
     prisonerlist=[Prisoner(i) for i in range(10)]
     boxlist=[Boxwithpaper(i) for i in range(10)]
     testcase = generate_and_store_testacses_returntestcaselist()
-    strat2(prisonerlist,boxlist,testcase)
+    p1=Process(target=strat1, args=(prisonerlist,boxlist,testcase))
+    p2=Process(target=strat2, args=(prisonerlist,boxlist,testcase))
+    p3=Process(target=strat3, args=(prisonerlist,boxlist,testcase))
+    p4=Process(target=strat4, args=(prisonerlist,boxlist,testcase))
+    p5=Process(target=strat5, args=(prisonerlist,boxlist,testcase))
+    p1.start()
+    p2.start()
+    p3.start()
+    p4.start()
+    p5.start()
+
+    p1.join()
+    p2.join()
+    p3.join()
+    p4.join()
+    p5.join()
+    print(time.process_time()-starttime)
     print('End')
     return
 

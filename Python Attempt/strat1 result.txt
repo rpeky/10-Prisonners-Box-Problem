@@ -1,0 +1,3 @@
+Success rate
+14400 number of cases passed
+0.003968253968253968 probabilty of success (0.3968253968253968)
